@@ -1,0 +1,65 @@
+# 依赖
+/node_modules
+
+
+
+
+# 打包后的静态资源映射文件
+*.map
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# IDE设置
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# 运行时数据
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# 目录环境文件
+.env
+.env.test
+
+# 日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 编辑器目录和文件
+.idea
+.vscode
+*.swp
+*.swo
+
+# 操作系统产生的文件
+.DS_Store
+Thumbs.db
+
+# 常见的 Node.js 忽略文件
+npm-debug.log*
+*.log
+*.csv
+*.dat
+*.out
+*.pid
+*.gz
+
+# Windows 图标文件
+Thumbs.db
+
+# Mac 文件系统文件
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Yarn Integrity 文件
+.yarn-integrity

@@ -1,0 +1,28 @@
+@import './base.css';
+@import "./font.css";
+
+#app {
+
+}
+
+hr{
+  width: 100%;
+  height: 1px;
+}
+
+.ElNotification__error .el-notification__title{
+  color: #ff0000;
+}
+
+.el-message-box_custom_info {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+}
+
+.el-message-box_custom_info .el-message__icon{
+  display: none !important;
+}
+.el-message-box_custom_info .el-message__content{
+  color: #ffffff !important;
+}
