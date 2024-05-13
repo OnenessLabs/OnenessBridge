@@ -30,6 +30,7 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
                 <span class="text-gray-500">Balance: {{ usdBalance }}</span>
                 <span class="ml-2 text-[#D6B635] cursor-pointer" @click="maxBalance">Max</span>
               </div>
+              <div v-if="checkAmount" class="text-red-900">Insufficient balance</div>
             </div>
             <div>
               <div class="text-2xl h-[50px] flex items-center">USDC</div>
@@ -37,7 +38,7 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
             </div>
           </div>
           <div class="mt-8">
-            <Btn class="px-6" :disabled="!web3Store.currentAccountFake||amount==0" v-if="!isApprove" @click="onDialogShow()">Deposit</Btn>
+            <Btn class="px-6" :disabled="!web3Store.currentAccountFake||amount==0||checkAmount" v-if="!isApprove" @click="onDialogShow()">{{ activeName==='deposit'?'Deposit':'withdraw' }}</Btn>
             <Btn @click="onApprove" v-else>Approve</Btn>
             <!-- <div @click="testPost()">testpost</div> -->
           </div>
@@ -71,7 +72,8 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
       :title="activeName==='deposit'?'Deposit':'withdraw'"
     >
     <div class="">
-      <div class="rounded-lg p-4 bg-neutral-900 text-white">
+      <div v-if="!btnPending">
+        <div class="rounded-lg p-4 bg-neutral-900 text-white">
         <div class="flex justify-between">
           <div class="text-lg flex items-center">
             <span class="rounded-full w-6 h-6 overflow-hidden"><img :src="activeName==='deposit'?ethlogo:onelogo"/></span>
@@ -118,8 +120,16 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
           </div>
         </div>
       </div>
+      
+      </div>
+      <div v-else>
+        <!-- <i class="mdi mdi-spin mdi-loading"></i> -->
+        <div class="text-xl text-white text-center">Waiting for network confirmation</div>
+        <div class="w-24 h-24 mx-auto mt-6"><loadingSvg/></div>
+        
+      </div>
       <Btn class="px-6 w-full mt-6 !h-10" size="large" :disabled="btnPending" @click="sendAmount()">
-        <i class="mdi mdi-spin mdi-loading" v-if="btnPending"></i><span class="ml-3">{{ activeName==='deposit'?'Deposit':'withdraw' }}</span>
+        <i class="mdi mdi-spin mdi-loading" v-if="btnPending"></i><span class="ml-3">Confirm</span>
       </Btn>
     </div>
   </ElDialog>
@@ -138,6 +148,7 @@ import WalletError from '@/components/WalletError/index.vue'
 import fromTo from "./fromTo.vue"
 import ethlogo from '@/assets/img/eth.png'
 import onelogo from '@/assets/img/one.png'
+import loadingSvg from './loading.vue'
 // import BigNumber from "bignumber.js";
 import {
   MesonClient,
@@ -167,6 +178,7 @@ const outChain = computed(() => activeName.value==='deposit'?'0x003d':'0x36a8')
 const inNetwork = computed(() => activeName.value==='deposit'?'Ethereum':'Oneness')
 const outNetwork = computed(() => activeName.value==='deposit'?'Oneness':'Ethereum')
 // const outChain = components(() => activeName.value==='deposit'?'0x003d':'0x36a8')
+let checkAmount = computed(() => Number(amount.value) > Number(web3Store.balances.usdc))
 const swapData = computed(() => {
   return {
     _encoded: '',
@@ -239,6 +251,7 @@ const onApprove = async()=>{
   try {
     const contract = getErc20Contract(web3Store.currentAccount,usdc.value)
     await contract.approve(swapAddr.value, ethers.constants.MaxUint256)
+    await getAllowance()
       ElMessage({
       message: 'Approved.',
         type: 'success',
@@ -298,7 +311,7 @@ const sendAmount = async()=>{
       "initiator": signedReleaseData.initiator,
       "targetChain":"one"
     }
-    await axios.post('https://meson-ethbridge.vercel.app/api', postData ,{
+    const res = await axios.post('https://meson-ethbridge.vercel.app/api', postData ,{
       headers: {
         'Content-Type': 'application/json'
       },
@@ -313,7 +326,7 @@ const sendAmount = async()=>{
       })
       dialogShow.value = false
     }
-    console.log(re_swap, 'signature_1', res);
+    // console.log(re_swap, 'signature_1', res);
   } catch (error) {
     const err = error.message || error
     console.log(err);
