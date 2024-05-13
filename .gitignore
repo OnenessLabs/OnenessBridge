@@ -1,7 +1,7 @@
 # 依赖
 /node_modules
 
-
+/dist
 
 
 # 打包后的静态资源映射文件
