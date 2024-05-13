@@ -19,12 +19,13 @@
 </template>
 
 <script setup>
+
 import { useInitApp } from "@/useInitApp.js";
 import {computed, onMounted, reactive, ref, watch, inject} from "vue";
 import pinia, {useInviteCodePopup, useWeb3Store} from "@/stores/index.js";
 import ConnectPopup from "@/components/ConnectPopup/index.vue";
 import InviteCodePopup from "@/components/InviteCodePopup/index.vue"
-
+import { ethers } from "ethers";
 // import ListenSwitchChain from "@/packages/ListenSwitchChain/index.js";
 // import SwitchChainDialog from "@/components/SwitchChainDialog/index.vue";
 
@@ -42,7 +43,7 @@ onMounted(() => {
   window.onload = () => {
     const { providerKey, providerMap, installedList, activeProvider } = useInitApp();
     web3Store.init({ providerKey, providerMap, installedList, activeProvider });
-    console.log(web3Store);
+    // console.log(web3Store);
     web3Store.getAccounts().then(res => {
       web3Store.accounts = res;
     }).catch(err => {
@@ -50,11 +51,33 @@ onMounted(() => {
     }).finally(() => {
       data.loaded = true;
     });
+    
     if (window.ethereum) {
-      
+      const provider = new ethers.providers.Web3Provider(window.ethereum)
+      web3Store.evmProvider = provider
+      provider.provider.on("_initialized", updateWalletAndAccounts);
+      provider.provider.on("connect", updateWalletAndAccounts);
+      provider.provider.on("accountsChanged", updateWallet);
+      provider.provider.on("chainChanged", updateWalletAndAccounts);
+      provider.provider.on("disconnect", disconnectWallet);
+      provider.provider.on("block", (blockNumber) => {
+        // Emitted on every block change
+        web3Store.evmblockNumber = blockNumber
+        console.log(blockNumber,'blocknum');
+        updateWalletAndAccounts()
+    })
     }
   };
-
+  const updateWalletAndAccounts = () =>{
+    console.log('chgchain');
+    web3Store.getAccounts()
+  }
+  const updateWallet = () =>{
+    web3Store.getAccounts()
+  }
+  const disconnectWallet = () =>{
+    
+  }
   // 横屏提示
   function landscapeAndPortrait() {
     if (window.orientation === 180 || window.orientation === 0) {
@@ -92,7 +115,6 @@ const accountsChangedListener = (res) => {
   }
 }
 
-// 监听钱包地址变化
 watch(() => web3Store.currentAccount, (newVal) => {
   if (newVal) {
     let pr;
@@ -111,7 +133,6 @@ const isShowConnectWallet = computed(() => {
   return web3Store.isShowConnectWallet;
 });
 
-// 监听是否需要展示弹窗账户链接弹窗
 watch(isShowConnectWallet, (val) => {
   if (val) {
     connectPopupRef.value.handleOpen();

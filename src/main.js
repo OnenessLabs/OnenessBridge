@@ -7,6 +7,7 @@ import "element-plus/es/components/notification/style/css"
 import "element-plus/es/components/tabs/style/css"
 import "element-plus/es/components/input/style/css"
 import "element-plus/es/components/message/style/css"
+// import "element-plus/es/components/alert/style/css"
 import '@mdi/font/css/materialdesignicons.css'
 import pinia, { useWeb3Store } from "@/stores/index.js";
 import HttpApi from "@/packages/HttpApi/index.js";

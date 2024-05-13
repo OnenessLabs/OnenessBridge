@@ -26,3 +26,8 @@ hr{
 .el-message-box_custom_info .el-message__content{
   color: #ffffff !important;
 }
+.el-dialog {
+  width: 470px;
+  border-radius: 16px;
+  background-color: #222222 !important;
+}

@@ -1,10 +1,13 @@
 <template>
   <div class="mx-auto max-w-5xl mt-8">
+    <div>
+      <WalletError/>
+    </div>
     <div class="bg-[#151515] text-[#ffffff] rounded-[calc(32/1920*100vw)] max-sm:rounded-[calc(32/750*100vw)] 3xl:rounded-[32px] py-[calc(32/1920*100vw)] max-sm:py-[calc(32/750*100vw)] 3xl:py-[32px] px-[calc(40/1920*100vw)] max-sm:px-[calc(24/750*100vw)] 3xl:px-[40px] pb-[calc(14/1920*100vw)] max-sm:pb-[calc(14/750*100vw)] 3xl:pb-[14px]">
       <div class="mb-[calc(24/1920*100vw)] max-sm:mb-[calc(24/750*100vw)] 3xl:mb-[24px]">
-        <ElTabs v-model="activeName" class="demo-tabs" @tab-click="handleClick">
+        <ElTabs v-model="activeName" @tab-click="handleClick">
           <ElTabPane label="Deposit" name="deposit"></ElTabPane>
-          <ElTabPane label="Withdraw" name="second"></ElTabPane>
+          <ElTabPane label="Withdraw" name="withdraw"></ElTabPane>
         </ElTabs>
       </div>
       <div>
@@ -15,21 +18,8 @@ px-[calc(32/1920*100vw)] max-sm:px-[calc(24/750*100vw)] 3xl:px-[32px]
 pt-[calc(48/750*100vw)] sm:pt-[calc(48/1920*100vw)] 3xl:pt-[48px]
 pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
           <div class="text-2xl">Network</div>
-          <div class="flex items-center mt-4">
-            <div class="flex">
-              <div class="w-12 h-12 rounded-full overflow-hidden"><img src="@/assets/img/eth.png"/></div>
-              <div class="ml-2"><div class="text-xl font-bold">From</div>
-              <div class="text-gray-400">Ethereum</div></div>
-            </div>
-            <div class="px-6">
-              <img class="w-[calc(24/750*100vw)] sm:w-[calc(24/1920*100vw)] 3xl:w-[24px]" src="@/assets/img/icon-inviter-r.png" alt="">
-            </div>
-            <div class="flex">
-              <div class="w-12 h-12 rounded-full overflow-hidden"><img src="@/assets/img/one.png"/></div>
-              <div class="ml-2"><div class="text-xl font-bold">To</div>
-              <div class="text-gray-400">Oneness</div></div>
-            </div>
-          </div>
+          <div class="mt-4"><fromTo :type="activeName"></fromTo></div>
+          
           <div class="text-2xl mt-6">Amount</div>
           <div class="flex justify-between max-w-xl mt-4">
             <div>
@@ -43,13 +33,13 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
             </div>
             <div>
               <div class="text-2xl h-[50px] flex items-center">USDC</div>
-              <div class="text-[#D6B635] cursor-pointer">Add One to wallet</div>
+              <div class="text-[#D6B635] cursor-pointer" @click="addTokenToWallet">Add One to wallet</div>
             </div>
           </div>
           <div class="mt-8">
             <Btn class="px-6" :disabled="!web3Store.currentAccountFake||amount==0" v-if="!isApprove" @click="onDialogShow()">Deposit</Btn>
             <Btn @click="onApprove" v-else>Approve</Btn>
-            <div @click="testPost()">testpost</div>
+            <!-- <div @click="testPost()">testpost</div> -->
           </div>
           <div class="mt-8 bg-gray-700 p-4 rounded-xl">
             <div class="flex justify-between">
@@ -61,10 +51,10 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
               <span class="text-gray-200">Bridge time</span>
               <span class="text-gray-400">A few minutes</span>
             </div>
-            <div class="flex justify-between">
+            <!-- <div class="flex justify-between">
               <span class="text-gray-200">Bridge fee</span>
               <span class="text-gray-400">0.000761535 ETH</span>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
@@ -78,14 +68,14 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
       @close="handleClose"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
-      title="Deposit"
+      :title="activeName==='deposit'?'Deposit':'withdraw'"
     >
     <div class="">
       <div class="rounded-lg p-4 bg-neutral-900 text-white">
         <div class="flex justify-between">
           <div class="text-lg flex items-center">
-            <span class="rounded-full w-6 h-6 overflow-hidden"><img src="@/assets/img/eth.png"/></span>
-            <span class="ml-4">Ethereum</span>
+            <span class="rounded-full w-6 h-6 overflow-hidden"><img :src="activeName==='deposit'?ethlogo:onelogo"/></span>
+            <span class="ml-4">{{ inNetwork }}</span>
           </div>
           <div class="flex  items-center">
             <span class="text-lg">{{ amount }}</span>
@@ -97,8 +87,8 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
       <div class="rounded-lg p-4 bg-neutral-900 text-white mt-4">
         <div class="flex justify-between">
           <div class="text-lg flex items-center">
-            <span class="rounded-full w-6 h-6 overflow-hidden"><img src="@/assets/img/one.png"/></span>
-            <span class="ml-4">Oneness</span>
+            <span class="rounded-full w-6 h-6 overflow-hidden"><img :src="activeName==='deposit'?onelogo:ethlogo"/></span>
+            <span class="ml-4">{{ outNetwork }}</span>
           </div>
           <div class="flex  items-center">
             <span class="text-lg">{{ amount }}</span>
@@ -108,7 +98,7 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
         <div class="text-right text-gray-600 mt-3">{{ web3Store.currentAccount }}</div>
       </div>
       <div class="rounded-lg p-4 bg-neutral-900 text-white mt-4">
-        <div class="flex justify-between">
+        <!-- <div class="flex justify-between">
           <div class="text-lg flex items-center">
             <span class="">Total Fee</span>
           </div>
@@ -116,12 +106,12 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
             <span class="text-lg">--</span>
             <span class="w-6 h-6 ml-4"><img src="@/assets/img/usdc.png"/></span>
           </div>
-        </div>
+        </div> -->
         <div class="text-gray-600 mt-3">
-          <div class="flex justify-between">
+          <!-- <div class="flex justify-between">
             <div>Service Fee</div>
             <div>0.5</div>
-          </div>
+          </div> -->
           <div class="flex justify-between">
             <div>Gas & LP Fees</div>
             <div>----</div>
@@ -129,7 +119,7 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
         </div>
       </div>
       <Btn class="px-6 w-full mt-6 !h-10" size="large" :disabled="btnPending" @click="sendAmount()">
-        <i class="mdi mdi-spin mdi-loading" v-if="btnPending"></i><span class="ml-3">Deposit</span>
+        <i class="mdi mdi-spin mdi-loading" v-if="btnPending"></i><span class="ml-3">{{ activeName==='deposit'?'Deposit':'withdraw' }}</span>
       </Btn>
     </div>
   </ElDialog>
@@ -137,14 +127,17 @@ pb-[calc(20/750*100vw)] sm:pb-[calc(24/1920*100vw)] 3xl:pb-[24px]">
   
 </template>
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed,watch } from "vue";
 import {ElTabs, ElTabPane, ElInput, ElDialog} from 'element-plus'
 import Btn from "@/components/btn/index.vue"
-import Swap from '@/lib/swap.js'
 import pinia, {useWeb3Store} from "@/stores/index.js";
 import { ethers, Contract, Wallet } from "ethers";
 import axios from "axios";
 import { ElMessage } from 'element-plus'
+import WalletError from '@/components/WalletError/index.vue'
+import fromTo from "./fromTo.vue"
+import ethlogo from '@/assets/img/eth.png'
+import onelogo from '@/assets/img/one.png'
 // import BigNumber from "bignumber.js";
 import {
   MesonClient,
@@ -156,27 +149,63 @@ import {
   SwapSigner
 } from 'mesonfi-sdk'
 import abi from '@/abi/meson.json'
-import Erc20abi from '@/abi/ERC20.json'
-import {getRemoteSigner, getContract} from './action.js'
-import QS from 'qs'
+// import Erc20abi from '@/abi/ERC20.json'
+import {getRemoteSigner, addTokenToWallet} from './action.js'
+import {getSwapContract,getErc20Contract} from '@/packages/utils/evmProvider.js'
+import {contractTokens,tokenList} from '@/packages/chainList/config/chainId.js'
+import { useRouter, useRoute } from 'vue-router'
+// import QS from 'qs'
 const web3Store = useWeb3Store(pinia);
+const router = useRouter()
+const route = useRoute()
 const activeName = ref('deposit')
 let amount = ref(0)
-let usdBalance = ref(0)
+let usdBalance = computed(()=>web3Store.balances.usdc)
 let btnPending = ref(false)
 let dialogShow = ref(false)
+const outChain = computed(() => activeName.value==='deposit'?'0x003d':'0x36a8')
+const inNetwork = computed(() => activeName.value==='deposit'?'Ethereum':'Oneness')
+const outNetwork = computed(() => activeName.value==='deposit'?'Oneness':'Ethereum')
+// const outChain = components(() => activeName.value==='deposit'?'0x003d':'0x36a8')
+const swapData = computed(() => {
+  return {
+    _encoded: '',
+    amount: ethers.utils.parseUnits(amount.value.trim().toString(),6),
+    fee: ethers.utils.parseUnits('1',6),
+    version: 1,
+    // expireTs: Math.floor(Date.now() / 1000) + 5400,
+    // inChain: '0x36a8',
+    inToken: activeName.value==='deposit'?1:5,
+    // outChain: '0x003d',
+    outToken: activeName.value==='deposit'?5:1,
+    salt: '0x80000000000005bfec66'
+  }
+  
+})
 const handleClick = (tab, event) => {
-  console.log(tab, event)
+  console.log(tab, event, activeName)
+  setTimeout(()=>{
+    router.replace({ name: 'home', params: { type: activeName.value} })
+  })
+  
 }
 const handleClose = ()=>{
   dialogShow.value = false
 }
 const onDialogShow = ()=>{
+  console.log(swapData.value)
   dialogShow.value = true
 }
 // console.log(import.meta.env.VITE_APP_SWAP_ADDRESS)
-const swapAddr = import.meta.env.VITE_APP_SWAP_ADDRESS
-const tokenAddr = import.meta.env.VITE_APP_USDC_ADDRESS
+const swapAddr = computed(() =>{
+  const token = contractTokens.find((item)=>item.name==='swap'&&item.chainId==web3Store.evmCurrentNetwork.chainId)
+  return token.address ||''
+})
+const usdc = computed(() =>{
+  const token = tokenList.find((item)=>item.name==='usdc'&&item.chainId==web3Store.evmCurrentNetwork.chainId)
+  return token.address ||''
+})
+// const tokenAddr = import.meta.env.VITE_APP_USDC_ADDRESS
 let isApprove = ref(false)
 
 const maxBalance = ()=>{
@@ -184,9 +213,8 @@ const maxBalance = ()=>{
 }
 const getAllowance = async ()=>{
   try {
-    const contract = getContract(web3Store.currentAccount, tokenAddr, Erc20abi.abi)
-    const allowance = await contract.allowance(web3Store.currentAccount,swapAddr);
-    console.log();
+    const contract = getErc20Contract(web3Store.currentAccount,usdc.value)
+    const allowance = await contract.allowance(web3Store.currentAccount,swapAddr.value);
     if (Number(allowance.toString())>0) {
       isApprove.value = false
     } else {
@@ -197,23 +225,20 @@ const getAllowance = async ()=>{
   }
   
 }
-const getBalance = async ()=>{
-  try {
-    const contract = getContract(web3Store.currentAccount, tokenAddr, Erc20abi.abi)
-    const balance = await contract.balanceOf(web3Store.currentAccount);
-    usdBalance.value = ethers.utils.formatUnits(balance.toString(),6)
-  } catch (error) {
-    console.log(error);
-  }
-}
+watch(()=>web3Store.currentAccount,()=>{
+  console.log('account');
+  getAllowance()
+})
+watch(()=>web3Store.evmCurrentNetwork.chainId,()=>{
+  console.log('chainId');
+  getAllowance()
+})
+
 const onApprove = async()=>{
   btnPending.value = true
   try {
-    // const provider = new ethers.providers.Web3Provider(window.ethereum)
-    // const signer = provider.getSigner(web3Store.currentAccount)
-    const contract = getContract(web3Store.currentAccount, tokenAddr, Erc20abi.abi)
-    // new Contract(tokenAddr, Erc20abi.abi, signer)
-    await contract.approve(swapAddr, ethers.constants.MaxUint256)
+    const contract = getErc20Contract(web3Store.currentAccount,usdc.value)
+    await contract.approve(swapAddr.value, ethers.constants.MaxUint256)
       ElMessage({
       message: 'Approved.',
         type: 'success',
@@ -225,7 +250,6 @@ const onApprove = async()=>{
     btnPending.value = false
   }
   
-  console.log(res);
 }
 const testPost = async ()=>{
   
@@ -237,7 +261,7 @@ const testPost = async ()=>{
       "initiator": 'signedReleaseData.initiator',
       "targetChain":"eth"
     }
-    await axios.post('/api', postData ,{
+    await axios.post('https://meson-ethbridge.vercel.app/api', postData ,{
       headers: {
         'Content-Type': 'application/json'
       },
@@ -252,72 +276,47 @@ const sendAmount = async()=>{
     const provider = new ethers.providers.Web3Provider(window.ethereum)
     const signer = await provider.getSigner(web3Store.currentAccount)
     const remoteSigner = getRemoteSigner(web3Store.currentAccount)
-    
-    const data = {
-      _encoded: '',
-      amount: ethers.utils.parseUnits(amount.value.trim().toString(),6),
-      fee: ethers.utils.parseUnits('1',6),
-      version: 1,
-      expireTs: Math.floor(Date.now() / 1000) + 5400,
-      inChain: '0x36a8',
-      inToken: 1,
-      outChain: '0x003d',
-      outToken: 5,
-      salt: '0x80000000000005bfec66'
-    }
     const swapSigner = new RemoteSwapSigner(remoteSigner)
-    const contract = new ethers.Contract(swapAddr, abi, signer)
-    console.log(signer, contract);
+    const contract = getSwapContract(web3Store.currentAccount,swapAddr.value)
     const mesonClientForInitiator = await MesonClient.Create(contract, swapSigner)
-    const re_swap = new SwapWithSigner(data, swapSigner)
+    const re_swap = mesonClientForInitiator.requestSwap(swapData.value, outChain.value)
+    // const re_swap = new SwapWithSigner(swapData.value, swapSigner)
     const signedRequestData = await re_swap.signForRequest(true)
     const signedRequest = new SignedSwapRequest(signedRequestData)
     console.log(signedRequest);
     signedRequest.checkSignature()
-    const postSwap = await mesonClientForInitiator.postSwap(signedRequest,1)
+    const postRes = await mesonClientForInitiator.postSwap(signedRequest,1)
+    console.log(postRes, '----');
+    await postRes.wait()
     const signedReleaseData = await re_swap.signForRelease(web3Store.currentAccount, true)
     console.log(signedReleaseData)
-    ElMessage({
+    
+    const postData = {
+      "encodedSwap": signedReleaseData.encoded,
+      "sign": signedReleaseData.signature,
+      "recipient": signedReleaseData.recipient,
+      "initiator": signedReleaseData.initiator,
+      "targetChain":"one"
+    }
+    await axios.post('https://meson-ethbridge.vercel.app/api', postData ,{
+      headers: {
+        'Content-Type': 'application/json'
+      },
+    })
+    if (res.data.err) {
+      // throw new Error(res.data.err)
+      ElMessage.error(res.data.err)
+    } else if(res.data.status==0){
+      ElMessage({
       message: 'Deposit success.',
         type: 'success',
       })
       dialogShow.value = false
-    // const res = await fetch('/api', {
-    //   method: 'POST',
-    //   headers: {
-    //   'Content-Type': 'application/json;charset=utf-8'
-    //   }, 
-    //   body: JSON.stringify({
-    //     "encodedSwap": signedReleaseData.encoded,
-    //     "sign": signedReleaseData.signature,
-    //     "recipient": signedReleaseData.recipient,
-    //     "initiator": signedReleaseData.initiator,
-    //     "targetChain":"eth"
-    //   }) 
-    // });
-    // QS.stringify({
-    //     "encodedSwap": signedReleaseData.encoded,
-    //     "sign": signedReleaseData.signature,
-    //     "recipient": signedReleaseData.recipient,
-    //     "initiator": signedReleaseData.initiator,
-    //     "targetChain":"eth"
-    //   })
-  //   const postData = {
-  //     "encodedSwap": signedReleaseData.encoded,
-  //     "sign": signedReleaseData.signature,
-  //     "recipient": signedReleaseData.recipient,
-  //     "initiator": signedReleaseData.initiator,
-  //     "targetChain":"eth"
-  //   }
-  //   const res = await axios.post('/api', postData ,{
-  //     data: JSON.stringify(postData),
-  //     headers: {
-  //   'Content-Type': 'application/json'
-  // },
-  //   })
-    console.log(re_swap, 'signature_1');
+    }
+    console.log(re_swap, 'signature_1', res);
   } catch (error) {
-    console.log(error.message, typeof error);
+    const err = error.message || error
+    console.log(err);
     ElMessage.error(error.message||error.toString())
   } finally {
     btnPending.value = false
@@ -328,9 +327,14 @@ const sendAmount = async()=>{
 
 onMounted(()=>{
     console.log('start page');
+    if (route.params.type=='withdraw') {
+      activeName.value = route.params.type
+    } else {
+      activeName.value = 'deposit'
+    }
     if (web3Store.currentAccount) {
       getAllowance()
-      getBalance()
+      // getBalance()
     }
   })
 </script>

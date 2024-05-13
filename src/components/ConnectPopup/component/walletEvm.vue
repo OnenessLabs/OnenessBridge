@@ -13,11 +13,23 @@ const handleConnectWallet = async (type) => {
   // if (web3Store.currentAccount) {
   //   return emits('btcFirstConnect');
   // }
+  
   loading.value = true
   try {
-    if (window.ethereum && type==='metamask') {
+    if (type === 'metamask') {
+      if (!web3Store.installedList.metaMask) {
+        web3Store.connectLoadingIcon = false;
+        return window.open('https://metamask.io/');
+      }
       await window.ethereum.request({method: 'eth_requestAccounts'})
+    } else if (type === 'okx') {
+      if (!web3Store.installedList.okx&&!window.okxwallet) {
+        window.open('https://www.okx.com/download');
+        return;
+      }
+      // accounts = await web3Store.activeProvider.bitcoin.requestAccounts();
     }
+    
     await web3Store.getAccounts()
     web3Store.isShowConnectWallet = false;
   } catch (error) {

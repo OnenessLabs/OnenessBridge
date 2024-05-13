@@ -17,13 +17,15 @@ const props = defineProps({
   <button :disabled="props.disabled"
           :class="{ 'activated' : props.activated }"
           class="btn bg-[#D6B635] text-[#000000]
-              text-[calc(24/1920*100vw)] max-sm:text-[calc(24/750*100vw)] 3xl:text-[24px]
               rounded-[calc(50/1920*100vw)] max-sm:rounded-[calc(50/750*100vw)] 3xl:rounded-[50px]
-              px-[10px]
-              h-[calc(58/1920*100vw)] max-sm:h-[calc(52/750*100vw)] 3xl:h-[58px]
+              px-4 text-lg py-2
 ">
     <slot></slot>
   </button>
+  <!-- text-[calc(24/1920*100vw)] max-sm:text-[calc(24/750*100vw)] 3xl:text-[20px]
+              rounded-[calc(50/1920*100vw)] max-sm:rounded-[calc(50/750*100vw)] 3xl:rounded-[50px]
+              px-4
+              h-[calc(58/1920*100vw)] max-sm:h-[calc(52/750*100vw)] 3xl:h-[58px] -->
 </template>
 
 <style lang="less" scoped>

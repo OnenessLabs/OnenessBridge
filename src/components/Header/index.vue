@@ -13,9 +13,14 @@
         
       </div>
       <div class="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-        <Btn v-connect-wallet class="animated-pop-in min-w-[calc(207/1920*100vw)] max-sm:min-w-[calc(199/750*100vw)] 3xl:min-w-[207px]">
-          <span v-if="!web3Store.currentAccountFake">Connect Wallet</span>
-          <span v-else>{{ web3Store.currentAccountFake }}</span>
+        <Btn v-connect-wallet class="animated-pop-in flex items-center">
+          <div class="w-6 h-6 rounded-full overflow-hidden">
+            <img :src="web3Store.currentWalletAvatar" alt="">
+          </div>
+          <div class="ml-2">
+            <span v-if="!web3Store.currentAccountFake">Connect Wallet</span>
+            <span v-else>{{ web3Store.currentAccountFake }}</span>
+          </div>
         </Btn>
       </div>
     </div>

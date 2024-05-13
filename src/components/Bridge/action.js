@@ -1,4 +1,7 @@
 import { ethers, Contract, Wallet } from "ethers";
+import {contractTokens,tokenList} from '@/packages/chainList/config/chainId.js'
+import pinia, {useWeb3Store} from "@/stores/index.js";
+const web3Store = useWeb3Store(pinia);
 const getRemoteSigner = (providerAddr) => {
   const provider = new ethers.providers.Web3Provider(window.ethereum)
   return {
@@ -27,8 +30,38 @@ const getContract = (signerAddr, tokenAddr, abi)=>{
   const signer = provider.getSigner(signerAddr)
   return new Contract(tokenAddr, abi, signer)
 }
-
-export {getRemoteSigner, getContract}
+const addTokenToWallet = async () => {
+  const token = tokenList.find((item)=>item.name==='usdc'&&item.chainId==web3Store.evmCurrentNetwork.chainId)
+  if (window.ethereum && window.ethereum.isMetaMask) {
+    const tokenAddress = token.address
+    const tokenSymbol = web3Store.evmCurrentNetwork.chainId == '123666'?'meson_usdt':'USDC';
+    const tokenDecimals = '6';
+    const tokenImage = '';
+  
+    const params = {
+      method: 'wallet_watchAsset',
+      params: {
+        type: 'ERC20',
+        options: {
+          address: tokenAddress,
+          symbol: tokenSymbol,
+          decimals: tokenDecimals,
+          image: tokenImage,
+        },
+      },
+    };
+  
+    try {
+      const result = await window.ethereum.request(params);
+      // console.log('Token added to MetaMask', result);
+    } catch (error) {
+      // console.error('Error adding token to MetaMask', error);
+    }
+  } else {
+    console.error('MetaMask is not installed');
+  }
+}
+export {getRemoteSigner, addTokenToWallet}
 
 // const balance = await provider.getBalance(web3Store.currentAccount)
 // const wallet = new Wallet('')
