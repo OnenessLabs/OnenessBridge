@@ -309,7 +309,7 @@ const sendAmount = async()=>{
       "sign": signedReleaseData.signature,
       "recipient": signedReleaseData.recipient,
       "initiator": signedReleaseData.initiator,
-      "targetChain":"one"
+      "targetChain":activeName.value==='deposit'?'one':'eth'
     }
     const res = await axios.post('https://meson-ethbridge.vercel.app/api', postData ,{
       headers: {
